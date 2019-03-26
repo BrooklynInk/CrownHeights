@@ -137,9 +137,17 @@
 		.intro_spacer {
 			height: 40px;
 		}
+		
+		figure {
+			position: -webkit-sticky;
+			position: sticky;	
+		}
+		
+		article {
+			position: relative;
+		}
 
 		.scroll__graphic {
-			position: absolute;
 			top: 0;
 			left: 0;
 			bottom: auto;
@@ -184,7 +192,6 @@
 		}
 
 		.scroll__text {
-			position: relative;
 			padding: 0 0 0 8rem;
 			max-width: 40rem;
 			width: 40%;
@@ -484,11 +491,11 @@
 	</div>
 	<div class='intro_spacer'> </div>
 	<section id='scroll'>
-		<div class='scroll__graphic'>
+		<figure class='scroll__graphic'>
 			<div class='chart'>
 			</div>
-		</div>
-		<div class='scroll__text'>
+		</figure>
+		<article class='scroll__text'>
 			<div class='step' data-step='1'>
 				<p>Each <span style="color: rgb(223,68,156)">pink</span> dot represents a registered voter’s previous address. When a dot moves, it changes color. Each <span style="color: rgb(58,144,222)">blue</span> dot represents a registered voter’s current address, as of September 13th, 2018.</p>
 			</div>
@@ -509,7 +516,7 @@
 				<p>Instead, they’ve scattered. Current addresses appear to cluster loosely around Jamaica/St. Albans in Queens and Harlem/Washington Heights in Manhattan — two heavily black, heavily Caribbean areas. But no area near as dense as Crown Heights has emerged. </p>
 			</div>
 			<div class='step_buffer'></div>
-		</div>
+		</article>
 	</section>
 	<div class='body_container'>
 		<p class='prose'>
@@ -644,9 +651,9 @@
 		}
 		// using d3 for convenience
 		var container = d3.select('#scroll');
-		var graphic = container.select('.scroll__graphic');
+		var graphic = container.select('figure');
 		var chart = graphic.select('.chart');
-		var text = container.select('.scroll__text');
+		var text = container.select('article');
 		var step = text.selectAll('.step');
 		var buffer = d3.selectAll('.step_buffer');
 
@@ -1192,24 +1199,15 @@
 			// update graphic based on step
 			// chart.select('p').text(response.index + 1)
 		}
-
-		function handleContainerEnter(response) {
-			// response = { direction }
-
-			// sticky the graphic (old school)
-			graphic.classed('is-fixed', true);
-			graphic.classed('is-bottom', false);
-		}
-
-		function handleContainerExit(response) {
-			// response = { direction }
-
-			// un-sticky the graphic, and pin to top/bottom of container
-			graphic.classed('is-fixed', false);
-			graphic.classed('is-bottom', response.direction === 'down');
+		
+		function setupStickyfill() {
+			d3.selectAll('.sticky').each(function () {
+				Stickyfill.add(this);
+			});
 		}
 
 		function init() {
+			setupStickyfill();
 			// 1. force a resize on load to ensure proper dimensions are sent to scrollama
 			handleResize();
 
@@ -1217,15 +1215,10 @@
 			// this will also initialize trigger observations
 			// 3. bind scrollama event handlers (this can be chained like below)
 			scroller.setup({
-				container: '#scroll',
-				graphic: '.scroll__graphic',
-				text: '.scroll__text',
 				step: '.scroll__text .step',
 				debug: false,
 			})
-				.onStepEnter(handleStepEnter)
-				.onContainerEnter(handleContainerEnter)
-				.onContainerExit(handleContainerExit);
+				.onStepEnter(handleStepEnter);
 
 			// setup resize event
 			window.addEventListener('resize', handleResize);
